@@ -41,6 +41,8 @@ func _input(event: InputEvent) -> void:
 		var keycode: String = str(key_event.keycode)
 		if not key_map.has(keycode):
 			return
+		if key_event.is_pressed() and pressed.has(keycode):
+			return
 
 		var subgroup: int = 0
 		if key_event.alt_pressed:
@@ -55,6 +57,7 @@ func _input(event: InputEvent) -> void:
 		if key_event.is_released():
 			if pressed.has(keycode):
 				Input.action_release(pressed.get(keycode))
+				pressed.erase(keycode)
 			return
 
 		for group_action in group_actions:
