@@ -1,0 +1,220 @@
+[gd_scene load_steps=9 format=3 uid="uid://cpu3qw7wfgmhp"]
+
+[ext_resource type="Script" path="res://addons/advanced_input_map/editor/aim_popup.gd" id="1_1f25k"]
+[ext_resource type="Script" path="res://addons/advanced_input_map/editor/input_map.gd" id="2_0avpc"]
+[ext_resource type="Texture2D" uid="uid://dpywxb6cka56y" path="res://addons/advanced_input_map/icons/Add.svg" id="2_ggmmx"]
+[ext_resource type="Script" path="res://addons/advanced_input_map/editor/groups.gd" id="4_h52db"]
+[ext_resource type="Script" path="res://addons/advanced_input_map/editor/group_select.gd" id="5_3ymh6"]
+[ext_resource type="Texture2D" uid="uid://dikt5e322nj3x" path="res://addons/advanced_input_map/icons/InputEventKey.svg" id="6_jngh4"]
+[ext_resource type="Script" path="res://addons/advanced_input_map/editor/bind_input.gd" id="6_x050a"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g3n8b"]
+bg_color = Color(0.252028, 0.252028, 0.252028, 0.498039)
+
+[node name="AimPopup" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1f25k")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer"]
+layout_mode = 2
+current_tab = 0
+
+[node name="Input Map" type="VBoxContainer" parent="MarginContainer/TabContainer"]
+layout_mode = 2
+script = ExtResource("2_0avpc")
+metadata/_tab_index = 0
+
+[node name="Filter" type="LineEdit" parent="MarginContainer/TabContainer/Input Map"]
+layout_mode = 2
+placeholder_text = "Filter by Name"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/TabContainer/Input Map"]
+layout_mode = 2
+
+[node name="AddNew" type="LineEdit" parent="MarginContainer/TabContainer/Input Map/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Add New Action"
+
+[node name="AddNewButton" type="Button" parent="MarginContainer/TabContainer/Input Map/HBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Add New Input"
+icon = ExtResource("2_ggmmx")
+
+[node name="PanelContainer" type="MarginContainer" parent="MarginContainer/TabContainer/Input Map"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Groups" type="VBoxContainer" parent="MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+script = ExtResource("4_h52db")
+metadata/_tab_index = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/TabContainer/Groups"]
+layout_mode = 2
+
+[node name="AddNew" type="LineEdit" parent="MarginContainer/TabContainer/Groups/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Add New Action"
+
+[node name="AddNewButton" type="Button" parent="MarginContainer/TabContainer/Groups/HBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Add New Input"
+icon = ExtResource("2_ggmmx")
+
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/TabContainer/Groups"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OverlayPanel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_g3n8b")
+
+[node name="GroupSelect" type="Panel" parent="OverlayPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.0
+offset_top = -35.0
+offset_right = 125.0
+offset_bottom = 47.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("5_3ymh6")
+
+[node name="MarginContainer" type="MarginContainer" parent="OverlayPanel/GroupSelect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="OverlayPanel/GroupSelect/MarginContainer"]
+layout_mode = 2
+
+[node name="GroupOptions" type="OptionButton" parent="OverlayPanel/GroupSelect/MarginContainer/VBoxContainer"]
+layout_mode = 2
+selected = 0
+item_count = 6
+popup/item_0/text = "none"
+popup/item_1/id = -1
+popup/item_1/separator = true
+popup/item_2/text = "hotbar_1"
+popup/item_2/id = 2
+popup/item_3/text = "hotbar_2"
+popup/item_3/id = 3
+popup/item_4/text = "hotbar_3"
+popup/item_4/id = 4
+popup/item_5/text = "movement"
+popup/item_5/id = 5
+
+[node name="ConfirmButton" type="Button" parent="OverlayPanel/GroupSelect/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Confirm"
+
+[node name="BindInput" type="Panel" parent="OverlayPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -80.0
+offset_right = 250.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_x050a")
+
+[node name="MarginContainer" type="MarginContainer" parent="OverlayPanel/BindInput"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="OverlayPanel/BindInput/MarginContainer"]
+layout_mode = 2
+
+[node name="InputPreview" type="Label" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ShortcutInput" type="LineEdit" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer"]
+layout_mode = 2
+clear_button_enabled = true
+right_icon = ExtResource("6_jngh4")
+
+[node name="MarginContainer" type="MarginContainer" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Confirm" type="Button" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Confirm"
+
+[node name="MarginContainer2" type="MarginContainer" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Cancel" type="Button" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cancel"
+
+[node name="MarginContainer3" type="MarginContainer" parent="OverlayPanel/BindInput/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
