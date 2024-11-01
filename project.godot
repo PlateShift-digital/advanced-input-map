@@ -11,12 +11,18 @@ config_version=5
 [application]
 
 config/name="AIM-Test"
+run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 AdvancedInput="*res://addons/advanced_input_map/advanced_input.gd"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/inferred_declaration=1
 
 [editor_plugins]
 

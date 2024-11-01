@@ -135,9 +135,15 @@ func apply_configuration(bindings: Dictionary) -> void:
 #endregion
 
 #region: runtime handling
+func get_key_groups() -> Dictionary:
+	return groups
+
 func enable_group(group_name: String) -> void:
 	groups[group_name] = true
 
 func disable_group(group_name: String) -> void:
 	groups[group_name] = false
+
+func group_enabled(group_name: String) -> bool:
+	return groups[group_name]
 #endregion
