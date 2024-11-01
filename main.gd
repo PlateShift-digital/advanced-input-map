@@ -3,9 +3,15 @@ extends Control
 @onready var panel: VBoxContainer = $HSplitContainer/ScrollContainer/ActionEvents
 @onready var input_list: VBoxContainer = $HSplitContainer/VSplitContainer/InputList
 @onready var groups_list: VBoxContainer = $HSplitContainer/VSplitContainer/GroupsList
+@onready var scroll_bar: VScrollBar = $HSplitContainer/ScrollContainer.get_v_scroll_bar()
+
+var max_scroll_length: float
 
 
 func _ready() -> void:
+	max_scroll_length = scroll_bar.max_value
+	scroll_bar.changed.connect(_on_scroll_bar_changed)
+	
 	var new_label: Label
 	for action: String in get_project_input_list():
 		new_label = Label.new()
@@ -58,3 +64,8 @@ func _on_group_toggled(toggled_on: bool) -> void:
 		AdvancedInput.enable_group(get_viewport().gui_get_focus_owner().name)
 	else:
 		AdvancedInput.disable_group(get_viewport().gui_get_focus_owner().name)
+
+func _on_scroll_bar_changed() -> void:
+	if max_scroll_length != scroll_bar.max_value: 
+		max_scroll_length = scroll_bar.max_value 
+		scroll_bar.set_value_no_signal(max_scroll_length)
