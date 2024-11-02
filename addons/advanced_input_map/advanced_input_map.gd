@@ -20,7 +20,7 @@ func _enter_tree() -> void:
 
 	add_autoload_singleton('AdvancedInput', 'advanced_input.gd')
 
-func _exit_tree() -> void:
+func _disable_plugin() -> void:
 	var input_map_node: Control = get_node('/root').find_children('Input Map', 'ActionMapEditor', true, false)[0]
 	var project_settings: TabContainer = input_map_node.get_parent()
 	var input_map_index: int = project_settings.get_children().find(input_map_node)
