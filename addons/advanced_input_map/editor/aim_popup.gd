@@ -9,7 +9,8 @@ extends Panel
 
 
 func _ready() -> void:
-	var config: Dictionary = load_input()
+	var input_config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string('res://adv_input_map.conf'))
+	var groups_config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string('res://adv_input_groups.conf'))
 
 	input_map.list_changed.connect(_on_list_changed)
 	input_map.binding_group_select_executed.connect(_on_binding_group_select_executed)
@@ -18,10 +19,10 @@ func _ready() -> void:
 	groups.group_removed.connect(_on_group_removed)
 	groups.group_renamed.connect(_on_group_renamed)
 
-	input_map.data = config.input
-	groups.data = config.groups
+	input_map.data = input_config
+	groups.data = groups_config
 
-	group_select.reload_group_options(config.groups.keys())
+	group_select.reload_group_options(groups_config.keys())
 	group_select.group_selected.connect(_on_group_select_group_selected)
 	bind_input.binding_event_confirmed.connect(_on_binding_event_confirmed)
 	bind_input.binding_event_canceled.connect(_on_binding_event_canceled)
@@ -32,44 +33,6 @@ func render() -> void:
 	groups.render()
 
 #region: configuration management
-func load_input() -> Dictionary:
-	return {
-		'input': load_input_map(),
-		'groups': load_input_groups(),
-	}
-
-func load_input_groups() -> Dictionary:
-	if FileAccess.file_exists('res://adv_input_groups.conf'):
-		return JSON.parse_string(FileAccess.get_file_as_string('res://adv_input_groups.conf'))
-
-	return {}
-
-func load_input_map() -> Dictionary:
-	if FileAccess.file_exists('res://adv_input_map.conf'):
-		return JSON.parse_string(FileAccess.get_file_as_string('res://adv_input_map.conf'))
-
-	var action: Dictionary
-	var converted: Dictionary = {}
-	for action_name in get_project_input_list():
-		action = ProjectSettings.get('input/' + action_name)
-		converted[action_name] = {
-			'deadzone': action.deadzone,
-			'events': [],
-			'group': '',
-		}
-		
-		for event: InputEvent in action.events:
-			if event is InputEventKey:
-				converted[action_name].events.append({
-					'alt_pressed': event.alt_pressed,
-					'shift_pressed': event.shift_pressed,
-					'ctrl_pressed': event.ctrl_pressed,
-					'physical_keycode': event.physical_keycode,
-					'unicode': event.unicode,
-				})
-	
-	return converted
-
 func handle_configuration_change() -> void:
 	var input_map_data: Dictionary = input_map.get_data()
 	var groups_data: Dictionary = groups.get_data()
@@ -77,24 +40,27 @@ func handle_configuration_change() -> void:
 	group_select.reload_group_options(groups_data.keys())
 
 	store_config_file(input_map_data, groups_data)
-	store_project_settings()
+	store_project_settings(input_map_data)
 
 func store_config_file(input_map_data: Dictionary, groups_data: Dictionary) -> void:
 	var map_file: FileAccess = FileAccess.open('res://adv_input_map.conf', FileAccess.WRITE)
-	map_file.store_string(JSON.stringify(input_map_data, ""))
+	map_file.store_string(JSON.stringify(input_map_data, "", false))
 	map_file.close()
 
 	var groups_file: FileAccess = FileAccess.open('res://adv_input_groups.conf', FileAccess.WRITE)
-	groups_file.store_string(JSON.stringify(groups_data, ""))
+	groups_file.store_string(JSON.stringify(groups_data, "", false))
 	groups_file.close()
 
-func store_project_settings() -> void:
+func store_project_settings(input_map_data: Dictionary) -> void:
 	for input_name in get_project_input_list():
+		print_debug('removing ' + 'input/' + input_name)
 		ProjectSettings.set('input/' + input_name, null)
 
-	for input_name in input_map.data:
+	for input_name in input_map_data:
+		print_debug('storing ' + 'input/' + input_name)
 		ProjectSettings.set('input/' + input_name, {"deadzone": 0.5, "events": []})
 
+	print_debug('saving settings')
 	ProjectSettings.save()
 #endregion
 

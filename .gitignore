@@ -1,6 +1,7 @@
 # Redot 4+ specific ignores
 .godot/
 /android/
+*.tmp
 
 # IDE specific ignores
 /.idea

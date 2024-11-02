@@ -29,7 +29,6 @@ size_flags_vertical = 3
 
 [node name="GroupsList" type="VBoxContainer" parent="HSplitContainer/VSplitContainer"]
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer"]
 layout_mode = 2

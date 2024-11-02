@@ -111,7 +111,7 @@ func load_configuration() -> Dictionary:
 
 func store_configuration(content: Dictionary) -> void:
 	var map_file: FileAccess = FileAccess.open('user://input_map.conf', FileAccess.WRITE)
-	map_file.store_string(JSON.stringify(content))
+	map_file.store_string(JSON.stringify(content, '', false))
 	map_file.close()
 
 func apply_configuration(bindings: Dictionary) -> void:

@@ -22,13 +22,17 @@ func _ready() -> void:
 	
 	if get_tree().root.has_node('AdvancedInput'):
 		var new_group: CheckBox
-		for group: String in AdvancedInput.get_key_groups():
+		for group: String in get_tree().root.get_node('AdvancedInput').get_key_groups():
 			new_group = CheckBox.new()
 			new_group.name = group
 			new_group.text = group
-			new_group.button_pressed = AdvancedInput.group_enabled(group)
+			new_group.button_pressed = get_tree().root.get_node('AdvancedInput').group_enabled(group)
 			new_group.toggled.connect(_on_group_toggled)
 			groups_list.add_child(new_group)
+	else:
+		new_label = Label.new()
+		new_label.text = 'AdvancedInputMap is disabled'
+		input_list.add_child(new_label)
 
 func _process(_delta: float) -> void:
 	var display_label: Label
@@ -61,9 +65,9 @@ func get_project_input_list() -> Array:
 
 func _on_group_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		AdvancedInput.enable_group(get_viewport().gui_get_focus_owner().name)
+		get_tree().root.get_node('AdvancedInput').enable_group(get_viewport().gui_get_focus_owner().name)
 	else:
-		AdvancedInput.disable_group(get_viewport().gui_get_focus_owner().name)
+		get_tree().root.get_node('AdvancedInput').disable_group(get_viewport().gui_get_focus_owner().name)
 
 func _on_scroll_bar_changed() -> void:
 	if max_scroll_length != scroll_bar.max_value: 
