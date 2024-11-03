@@ -10,6 +10,8 @@ var key_map: Dictionary = {}
 var groups: Dictionary = {}
 var pressed: Dictionary = {}
 
+var _enabled_groups: Array = []
+
 var key_priority: Array = [
 	# we dont need to check a combination of all 3 since that'd be a direct match.
 	FLAGS.SHIFT | FLAGS.ALT,
@@ -29,6 +31,8 @@ func _ready() -> void:
 
 	for group in load_groups():
 		groups[group] = group_data[group].enabled
+		if group_data[group].enabled:
+			_enabled_groups.append(group)
 
 	apply_configuration(input_map_data)
 
@@ -63,7 +67,7 @@ func _input(event: InputEvent) -> void:
 		for group_action in group_actions:
 			var group: String = group_action.substr(0, group_action.find('/'))
 			var action: String = group_action.substr(group_action.find('/') + 1)
-			if group == '' or groups[group]:
+			if group == '' or group_enabled(group):
 				pressed[keycode] = action
 				Input.action_press(action)
 
@@ -138,15 +142,19 @@ func apply_configuration(bindings: Dictionary) -> void:
 #endregion
 
 #region: runtime handling
-func get_key_groups() -> Dictionary:
-	return groups
+func get_key_groups() -> Array:
+	return groups.keys()
 
 func enable_group(group_name: String) -> void:
-	groups[group_name] = true
+	if not groups[group_name]:
+		groups[group_name] = true
+		_enabled_groups.append(group_name)
 
 func disable_group(group_name: String) -> void:
-	groups[group_name] = false
+	if groups[group_name]:
+		groups[group_name] = false
+		_enabled_groups.remove_at(_enabled_groups.find(group_name))
 
 func group_enabled(group_name: String) -> bool:
-	return groups[group_name]
+	return _enabled_groups.find(group_name) != -1
 #endregion
