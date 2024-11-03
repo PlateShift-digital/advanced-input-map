@@ -168,5 +168,8 @@ func disable_group(group_name: String) -> void:
 		_enabled_groups.remove_at(_enabled_groups.find(group_name))
 
 func group_enabled(group_name: String) -> bool:
+	if group_name == '':
+		return true
+	
 	return _enabled_groups.find(group_name) != -1
 #endregion
