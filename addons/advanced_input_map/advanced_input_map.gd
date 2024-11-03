@@ -6,7 +6,7 @@ var _adv_input: Panel
 
 
 func _enter_tree() -> void:
-	convert_default_to_aim_input()
+	convert_default_to_aim_input() # needs to be in enter_tree as it gets fired before enabled_plugin
 	
 	var input_map_node: Control = get_node('/root').find_children('Input Map', 'ActionMapEditor', true, false)[0]
 	var project_settings: TabContainer = input_map_node.get_parent()
@@ -18,6 +18,7 @@ func _enter_tree() -> void:
 	project_settings.add_child(_adv_input)
 	project_settings.move_child(_adv_input, input_map_index)
 
+func _enable_plugin() -> void:
 	add_autoload_singleton('AdvancedInput', 'advanced_input.gd')
 
 func _disable_plugin() -> void:
