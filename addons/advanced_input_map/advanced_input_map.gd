@@ -45,7 +45,7 @@ func convert_aim_to_default_input() -> void:
 	var gd_action: Dictionary
 	var key_event: InputEventKey
 	
-	for action_name in input_map:
+	for action_name: String in input_map:
 		action = input_map[action_name]
 		gd_action = {
 			'deadzone': action.deadzone,
@@ -68,7 +68,6 @@ func convert_aim_to_default_input() -> void:
 
 func convert_default_to_aim_input() -> void:
 	var adv_input_map: Dictionary
-	var adv_input_groups: Dictionary
 	if FileAccess.file_exists('res://adv_input_map.conf'):
 		adv_input_map = JSON.parse_string(FileAccess.get_file_as_string('res://adv_input_map.conf'))
 	if not FileAccess.file_exists('res://adv_input_groups.conf'):

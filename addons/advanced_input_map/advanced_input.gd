@@ -10,6 +10,8 @@ var key_map: Dictionary = {}
 var groups: Dictionary = {}
 var pressed: Dictionary = {}
 
+var _enabled_groups: Array = []
+
 var key_priority: Array = [
 	# we dont need to check a combination of all 3 since that'd be a direct match.
 	FLAGS.SHIFT | FLAGS.ALT,
@@ -29,6 +31,8 @@ func _ready() -> void:
 
 	for group in load_groups():
 		groups[group] = group_data[group].enabled
+		if group_data[group].enabled:
+			_enabled_groups.append(group)
 
 	apply_configuration(input_map_data)
 
@@ -36,12 +40,19 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var key_event: InputEventKey = event as InputEventKey
 
-		if [4194325, 4194326, 4194328].find(key_event.keycode) != -1:
+		if key_event.keycode in [4194325, 4194326, 4194328]:
 			return
 		var keycode: String = str(key_event.keycode)
 		if not key_map.has(keycode):
 			return
 		if key_event.is_pressed() and pressed.has(keycode):
+			return
+
+		if key_event.is_released():
+			if pressed.has(keycode):
+				for action: String in pressed.get(keycode):
+					Input.action_release(action)
+				pressed.erase(keycode)
 			return
 
 		var subgroup: int = 0
@@ -52,37 +63,37 @@ func _input(event: InputEvent) -> void:
 		if key_event.shift_pressed:
 			subgroup = subgroup | FLAGS.SHIFT
 
-		var group_actions: Array = resolve_group_action(key_map[keycode], str(subgroup))
+		var actions: Array = resolve_actions(key_map[keycode], str(subgroup))
 
-		if key_event.is_released():
-			if pressed.has(keycode):
-				Input.action_release(pressed.get(keycode))
-				pressed.erase(keycode)
-			return
+		pressed[keycode] = actions
+		for action: String in actions:
+			Input.action_press(action)
 
-		for group_action in group_actions:
-			var group: String = group_action.substr(0, group_action.find('/'))
-			var action: String = group_action.substr(group_action.find('/') + 1)
-			if group == '' or groups[group]:
-				pressed[keycode] = action
-				Input.action_press(action)
-
-func resolve_group_action(key_options: Dictionary, subgroup: String) -> Array:
+func resolve_actions(key_options: Dictionary, subgroup: String) -> Array:
 	var subgroup_int: int = int(subgroup)
+	var result: Array = []
 
 	if key_options.has(subgroup):
-		return key_options.get(subgroup)
+		for group in key_options[subgroup]:
+			if group_enabled(group):
+				result.append_array(key_options[subgroup][group])
+	if not result.is_empty():
+		return result
 
 	var fallback: int = 0
 	for modifier: int in key_priority:
 		fallback = modifier & subgroup_int
 		if fallback > 0 and key_options.has(str(fallback)):
-			return key_options.get(str(fallback))
+			for group in key_options[str(fallback)]:
+				if group_enabled(group):
+					result.append_array(key_options[str(fallback)][group])
+			if not result.is_empty():
+				return result
 
 	if key_options.has('0'):
 		return key_options.get('0')
 
-	return []
+	return result
 #endregion
 
 #region: configuration handling
@@ -131,22 +142,31 @@ func apply_configuration(bindings: Dictionary) -> void:
 
 			if not key_map.has(str(config.physical_keycode)):
 				key_map[str(config.physical_keycode)] = {}
-			if not key_map[str(config.physical_keycode)].has(str(subgroup)):
-				key_map[str(config.physical_keycode)][str(subgroup)] = []
+			var key_map_by_code: Dictionary = key_map[str(config.physical_keycode)]
+			if not key_map_by_code.has(str(subgroup)):
+				key_map_by_code[str(subgroup)] = {}
+			var key_map_subgroup: Dictionary = key_map_by_code[str(subgroup)]
+			if not key_map_subgroup.has(binding_config.group):
+				key_map_subgroup[binding_config.group] = []
+			var key_map_group: Array = key_map_subgroup[binding_config.group]
 
-			key_map[str(config.physical_keycode)][str(subgroup)].append(binding_config.group + '/' + binding)
+			key_map_group.append(binding)
 #endregion
 
 #region: runtime handling
-func get_key_groups() -> Dictionary:
-	return groups
+func get_key_groups() -> Array:
+	return groups.keys()
 
 func enable_group(group_name: String) -> void:
-	groups[group_name] = true
+	if not groups[group_name]:
+		groups[group_name] = true
+		_enabled_groups.append(group_name)
 
 func disable_group(group_name: String) -> void:
-	groups[group_name] = false
+	if groups[group_name]:
+		groups[group_name] = false
+		_enabled_groups.remove_at(_enabled_groups.find(group_name))
 
 func group_enabled(group_name: String) -> bool:
-	return groups[group_name]
+	return _enabled_groups.find(group_name) != -1
 #endregion
