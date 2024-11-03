@@ -53,14 +53,11 @@ func store_config_file(input_map_data: Dictionary, groups_data: Dictionary) -> v
 
 func store_project_settings(input_map_data: Dictionary) -> void:
 	for input_name in get_project_input_list():
-		print_debug('removing ' + 'input/' + input_name)
 		ProjectSettings.set('input/' + input_name, null)
 
 	for input_name in input_map_data:
-		print_debug('storing ' + 'input/' + input_name)
 		ProjectSettings.set('input/' + input_name, {"deadzone": 0.5, "events": []})
 
-	print_debug('saving settings')
 	ProjectSettings.save()
 #endregion
 
