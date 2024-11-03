@@ -48,6 +48,12 @@ func _input(event: InputEvent) -> void:
 		if key_event.is_pressed() and pressed.has(keycode):
 			return
 
+		if key_event.is_released():
+			if pressed.has(keycode):
+				Input.action_release(pressed.get(keycode))
+				pressed.erase(keycode)
+			return
+
 		var subgroup: int = 0
 		if key_event.alt_pressed:
 			subgroup = subgroup | FLAGS.ALT
@@ -57,12 +63,6 @@ func _input(event: InputEvent) -> void:
 			subgroup = subgroup | FLAGS.SHIFT
 
 		var group_actions: Array = resolve_group_action(key_map[keycode], str(subgroup))
-
-		if key_event.is_released():
-			if pressed.has(keycode):
-				Input.action_release(pressed.get(keycode))
-				pressed.erase(keycode)
-			return
 
 		for group_action in group_actions:
 			var group: String = group_action.substr(0, group_action.find('/'))
