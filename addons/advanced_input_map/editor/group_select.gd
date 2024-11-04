@@ -3,14 +3,23 @@ extends Panel
 
 signal group_selected(binding: String, group: String)
 
-@onready var group_options: OptionButton = $MarginContainer/VBoxContainer/GroupOptions
-@onready var confirm_button: Button = $MarginContainer/VBoxContainer/ConfirmButton
+@onready var container: VBoxContainer = $MarginContainer/VBoxContainer
 
+var group_options: OptionButton
+var confirm_button: Button
 var _target_binding: String
 var _target_group: String
 
 
 func _ready() -> void:
+	group_options = OptionButton.new()
+	
+	confirm_button = Button.new()
+	confirm_button.text = 'Confirm'
+	
+	container.add_child(group_options)
+	container.add_child(confirm_button)
+	
 	confirm_button.pressed.connect(_on_confirm_button_pressed)
 	group_options.item_selected.connect(_on_group_option_item_selected)
 

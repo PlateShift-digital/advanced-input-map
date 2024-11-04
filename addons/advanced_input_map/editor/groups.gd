@@ -9,10 +9,9 @@ signal group_renamed(old_name: String, new_name: String)
 @onready var new_input: LineEdit = $HBoxContainer/AddNew
 @onready var new_button: Button = $HBoxContainer/AddNewButton
 
-var data: Dictionary
+var _aim_tree: Tree
+var _root: TreeItem
 var remove_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Remove.svg')
-var aim_tree: Tree
-var root: TreeItem
 
 
 func _ready() -> void:
@@ -20,47 +19,48 @@ func _ready() -> void:
 	new_input.text_submitted.connect(_on_new_input_text_submitted)
 	new_button.pressed.connect(_on_new_button_pressed)
 
-	render()
+func set_data(data: Dictionary) -> void:
+	render(data)
 
 func get_data() -> Dictionary:
 	var new_data: Dictionary = {}
 
-	root = aim_tree.get_root()
-	for group: TreeItem in root.get_children():
-		new_data[group.get_text(1)] = {
+	_root = _aim_tree.get_root()
+	for group: TreeItem in _root.get_children():
+		new_data[group.get_metadata(1)] = {
 			'enabled': group.is_checked(0),
 		}
 
 	return new_data
 
 #region: tree rendering
-func render() -> void:
-	if aim_tree:
-		aim_tree.queue_free()
-	aim_tree = Tree.new()
-	aim_tree.item_edited.connect(_on_item_edited)
-	aim_tree.button_clicked.connect(_on_button_clicked)
+func render(data: Dictionary) -> void:
+	if _aim_tree:
+		_aim_tree.queue_free()
+	_aim_tree = Tree.new()
+	_aim_tree.item_edited.connect(_on_item_edited)
+	_aim_tree.button_clicked.connect(_on_button_clicked)
 
-	aim_tree.column_titles_visible = true
-	aim_tree.hide_root = true
-	aim_tree.columns = 3
-	aim_tree.set_column_title(0, 'Enabled')
-	aim_tree.set_column_expand(0, false)
-	aim_tree.set_column_title_alignment(0, HORIZONTAL_ALIGNMENT_LEFT)
-	aim_tree.set_column_title(1, 'Group Name')
-	aim_tree.set_column_expand(1, true)
-	aim_tree.set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_LEFT)
-	aim_tree.set_column_expand(2, false)
+	_aim_tree.column_titles_visible = true
+	_aim_tree.hide_root = true
+	_aim_tree.columns = 3
+	_aim_tree.set_column_title(0, 'Enabled')
+	_aim_tree.set_column_expand(0, false)
+	_aim_tree.set_column_title_alignment(0, HORIZONTAL_ALIGNMENT_LEFT)
+	_aim_tree.set_column_title(1, 'Group Name')
+	_aim_tree.set_column_expand(1, true)
+	_aim_tree.set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_LEFT)
+	_aim_tree.set_column_expand(2, false)
 
-	var root: TreeItem = aim_tree.create_item()
+	var _root: TreeItem = _aim_tree.create_item()
 
 	for key in data:
-		add_group_item(root, key, data[key])
+		add_group_item(_root, key, data[key])
 
-	aim_tree_parent.add_child(aim_tree)
+	aim_tree_parent.add_child(_aim_tree)
 
 func add_group_item(parent: TreeItem, key: String, group: Dictionary) -> void:
-	var item: TreeItem = aim_tree.create_item(parent)
+	var item: TreeItem = _aim_tree.create_item(parent)
 	item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
 	item.set_checked(0, group.enabled)
 	item.set_editable(0, true)
@@ -73,63 +73,46 @@ func add_group_item(parent: TreeItem, key: String, group: Dictionary) -> void:
 #endregion
 
 #region: tree events
-func get_key_sorted_dict(dictionary: Dictionary) -> Dictionary:
-	var new_dict: Dictionary = {}
-	var keys: Array = dictionary.keys()
-	keys.sort()
-	for key in keys:
-		new_dict[key] = dictionary[key]
-	return new_dict
-
 func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
 	if column == 2:
-		var group_name: String = item.get_text(1)
-		data.erase(item.get_text(1))
-		render()
-		group_removed.emit(group_name)
+		group_removed.emit(item.get_text(1))
+		item.free()
 
 func _on_item_edited() -> void:
-	var item: TreeItem = aim_tree.get_edited()
-	var column: int = aim_tree.get_edited_column()
+	var item: TreeItem = _aim_tree.get_edited()
+	var column: int = _aim_tree.get_edited_column()
 
 	if column == 0:
-		data[item.get_text(1)].enabled = item.is_checked(column)
-		render()
 		list_changed.emit()
 	if column == 1:
-		if data.has(item.get_text(column)):
-			render()
+		if get_data().has(item.get_text(column)):
+			item.set_text(1, item.get_metadata(1))
 			return
 
-		data[item.get_text(1)] = data[item.get_metadata(1)]
-		data.erase(item.get_metadata(1))
-		data = get_key_sorted_dict(data)
-		render()
-		group_renamed.emit(item.get_metadata(1), item.get_text(1))
+		var old_name: String = item.get_metadata(1)
+		item.set_metadata(1, item.get_text(1))
+		group_renamed.emit(old_name, item.get_text(1))
 #endregion
 
 #region: input form events
 func _on_new_input_text_changed(new_text: String) -> void:
-	if new_text != '' and not data.has(new_text):
+	if new_text != '' and not get_data().has(new_text):
 		new_button.disabled = false
 	else:
 		new_button.disabled = true
 
 func _on_new_input_text_submitted(new_text: String) -> void:
-	if new_text != '' and not data.has(new_text):
+	if new_text != '' and not get_data().has(new_text):
 		_on_new_button_pressed()
 
 func _on_new_button_pressed() -> void:
-	if data.has(new_input.text):
+	if get_data().has(new_input.text):
 		new_input.text = ''
 		new_input.text_changed.emit('')
 		return
 
-	data[new_input.text] = {
-		'enabled': false
-	}
+	add_group_item(_root, new_input.text, {'enabled': false})
 	new_input.text = ''
 	new_input.text_changed.emit('')
-	render()
 	list_changed.emit()
 #endregion

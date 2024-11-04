@@ -12,12 +12,13 @@ signal event_hotkey_binding_executed(binding: String, index: int)
 @onready var new_input: LineEdit = $HBoxContainer/AddNew
 @onready var new_button: Button = $HBoxContainer/AddNewButton
 
-var data: Dictionary
 var add_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Add.svg')
 var edit_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Edit.svg')
 var remove_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Remove.svg')
 var key_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/InputEventKey.svg')
-var aim_tree: Tree
+
+var _aim_tree: Tree
+var _root
 
 
 func _ready() -> void:
@@ -25,13 +26,14 @@ func _ready() -> void:
 	new_input.text_submitted.connect(_on_new_input_text_submitted)
 	new_button.pressed.connect(_on_new_button_pressed)
 
-	render()
+func set_data(new_data: Dictionary) -> void:
+	render(new_data)
 
 func get_data() -> Dictionary:
 	var new_data: Dictionary = {}
 	var event_key: InputEventKey
 
-	var root: TreeItem = aim_tree.get_root()
+	var root: TreeItem = _aim_tree.get_root()
 	for binding: TreeItem in root.get_children():
 		var events: Array[Dictionary] = []
 
@@ -45,7 +47,7 @@ func get_data() -> Dictionary:
 				'unicode': event_key.unicode,
 			})
 
-		new_data[binding.get_text(0)] = {
+		new_data[binding.get_metadata(0)] = {
 			'group': binding.get_text(1),
 			'deadzone': binding.get_range(2),
 			'events': events,
@@ -54,42 +56,41 @@ func get_data() -> Dictionary:
 	return new_data
 
 #region: tree rendering
-func render() -> void:
-	if aim_tree:
-		aim_tree.queue_free()
-	aim_tree = Tree.new()
-	aim_tree.item_edited.connect(_on_item_edited)
-	aim_tree.button_clicked.connect(_on_button_clicked)
-	aim_tree.item_activated.connect(_on_item_activated)
-	aim_tree.item_icon_double_clicked.connect(_on_item_edited)
+func render(data: Dictionary) -> void:
+	if _aim_tree:
+		_aim_tree.queue_free()
+	_aim_tree = Tree.new()
+	_aim_tree.item_edited.connect(_on_item_edited)
+	_aim_tree.button_clicked.connect(_on_button_clicked)
+	_aim_tree.item_activated.connect(_on_item_activated)
+	_aim_tree.item_icon_double_clicked.connect(_on_item_edited)
 
+	_aim_tree.column_titles_visible = true
+	_aim_tree.hide_root = true
+	_aim_tree.columns = 5
+	_aim_tree.set_column_title(0, 'Binding')
+	_aim_tree.set_column_expand_ratio(0, 3)
+	_aim_tree.set_column_expand(0, true)
+	_aim_tree.set_column_title_alignment(0, HORIZONTAL_ALIGNMENT_LEFT)
+	_aim_tree.set_column_title(1, 'Group')
+	_aim_tree.set_column_expand_ratio(1, 1)
+	_aim_tree.set_column_expand(1, true)
+	_aim_tree.set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_LEFT)
+	_aim_tree.set_column_title(2, 'Deadzone')
+	_aim_tree.set_column_title_alignment(2, HORIZONTAL_ALIGNMENT_LEFT)
+	_aim_tree.set_column_expand(2, false)
+	_aim_tree.set_column_expand(3, false)
+	_aim_tree.set_column_expand(4, false)
 
-	aim_tree.column_titles_visible = true
-	aim_tree.hide_root = true
-	aim_tree.columns = 5
-	aim_tree.set_column_title(0, 'Binding')
-	aim_tree.set_column_expand_ratio(0, 3)
-	aim_tree.set_column_expand(0, true)
-	aim_tree.set_column_title_alignment(0, HORIZONTAL_ALIGNMENT_LEFT)
-	aim_tree.set_column_title(1, 'Group')
-	aim_tree.set_column_expand_ratio(1, 1)
-	aim_tree.set_column_expand(1, true)
-	aim_tree.set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_LEFT)
-	aim_tree.set_column_title(2, 'Deadzone')
-	aim_tree.set_column_title_alignment(2, HORIZONTAL_ALIGNMENT_LEFT)
-	aim_tree.set_column_expand(2, false)
-	aim_tree.set_column_expand(3, false)
-	aim_tree.set_column_expand(4, false)
-
-	var root: TreeItem = aim_tree.create_item()
+	_root = _aim_tree.create_item()
 
 	for key in data:
-		add_binding_item(root, key, data[key])
+		add_binding_item(_root, key, data[key])
 
-	aim_tree_parent.add_child(aim_tree)
+	aim_tree_parent.add_child(_aim_tree)
 
 func add_binding_item(parent: TreeItem, key: String, binding: Dictionary) -> void:
-	var item: TreeItem = aim_tree.create_item(parent)
+	var item: TreeItem = _aim_tree.create_item(parent)
 	item.set_text(0, key)
 	item.set_metadata(0, key)
 	item.set_editable(0, true)
@@ -116,7 +117,7 @@ func add_key_item(parent: TreeItem, event: Dictionary) -> void:
 	event_key.physical_keycode = event.physical_keycode
 	event_key.unicode = event.unicode
 
-	var item: TreeItem = aim_tree.create_item(parent)
+	var item: TreeItem = _aim_tree.create_item(parent)
 	item.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
 	item.set_icon(0, key_texture)
 	item.set_text(0, event_key.as_text())
@@ -145,37 +146,31 @@ func resolve_depth(item: TreeItem) -> int:
 	return depth
 
 func _on_item_edited() -> void:
-	var item: TreeItem = aim_tree.get_edited()
-	var column: int = aim_tree.get_edited_column()
+	var item: TreeItem = _aim_tree.get_edited()
+	var column: int = _aim_tree.get_edited_column()
 	var depth: int = resolve_depth(item)
 
 	if depth == 1:
-		if column == 0:
-			if data.has(item.get_text(column)):
-				render()
+		if column == 0: # rename action
+			if get_data().has(item.get_text(column)):
+				item.set_text(column, item.get_metadata(column))
 				return
 
-			var new_data: Dictionary = {}
-			data[item.get_text(0)] = data[item.get_metadata(0)]
-			data.erase(item.get_metadata(0))
-			data = get_key_sorted_dict(data)
-			render()
+			item.set_metadata(column, item.get_text(column))
 			list_changed.emit()
-		if column == 2:
-			data[item.get_metadata(0)].deadzone = item.get_range(column)
-			render()
+		if column == 2: # deadzone changed
 			list_changed.emit()
 
 func _on_item_activated() -> void:
-	var item: TreeItem = aim_tree.get_selected()
-	var column: int = aim_tree.get_selected_column()
+	var item: TreeItem = _aim_tree.get_selected()
+	var column: int = _aim_tree.get_selected_column()
 	var depth: int = resolve_depth(item)
 
 	if depth == 1:
-		if column == 1:
+		if column == 1: # select group for action
 			binding_group_select_executed.emit(item.get_metadata(0))
 	if depth == 2:
-		if column == 0 or column == 1:
+		if column == 0 or column == 1: # change keybind
 			var bind_name: String = item.get_parent().get_text(0)
 			var bind_index: int = item.get_parent().get_children().find(item)
 
@@ -184,53 +179,44 @@ func _on_item_activated() -> void:
 func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
 	var depth: int = resolve_depth(item)
 
-	if depth == 1:
-		if column == 3:
+	if depth == 1: # action level
+		if column == 3: # add keybind
 			var bind_name: String = item.get_text(0)
 			event_hotkey_binding_executed.emit(bind_name, -1)
-		if column == 4:
-			data.erase(item.get_text(0))
-			render()
+		if column == 4: # delete action
+			item.free()
 			list_changed.emit()
-	if depth == 2:
-		if column == 3:
+	if depth == 2: # key-bind level
+		if column == 3: # edit keybind
 			var bind_name: String = item.get_parent().get_text(0)
 			var bind_index: int = item.get_parent().get_children().find(item)
 
 			event_hotkey_binding_executed.emit(bind_name, bind_index)
-		if column == 4:
-			var bind_name: String = item.get_parent().get_text(0)
-			var bind_index: int = item.get_parent().get_children().find(item)
-
-			data[bind_name].events.remove_at(bind_index)
-			render()
+		if column == 4: # delete keybind
+			item.free()
 			list_changed.emit()
 #endregion
 
 #region: input form events
 func _on_new_input_text_changed(new_text: String) -> void:
-	if new_text != '' and not data.has(new_text):
+	if new_text != '' and not get_data().has(new_text):
 		new_button.disabled = false
 	else:
 		new_button.disabled = true
 
 func _on_new_input_text_submitted(new_text: String) -> void:
-	if new_text != '' and not data.has(new_text):
+	if new_text != '' and not get_data().has(new_text):
 		_on_new_button_pressed()
 
 func _on_new_button_pressed() -> void:
-	if data.has(new_input.text):
+	if get_data().has(new_input.text):
 		new_input.text = ''
 		new_input.text_changed.emit('')
 		return
 
-	data[new_input.text] = {
-		'group': '',
-		'deadzone': 0.5,
-		'events': [],
-	}
+	add_binding_item(_root, new_input.text, {'group': '', 'deadzone': 0.5, 'events': []})
+
 	new_input.text = ''
 	new_input.text_changed.emit('')
-	render()
 	list_changed.emit()
 #endregion
