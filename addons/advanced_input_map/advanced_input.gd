@@ -91,7 +91,9 @@ func resolve_actions(key_options: Dictionary, subgroup: String) -> Array:
 				return result
 
 	if key_options.has('0'):
-		return key_options.get('0')
+		for group in key_options['0']:
+			if group_enabled(group):
+				result.append_array(key_options['0'][group])
 
 	return result
 #endregion
