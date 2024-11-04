@@ -75,8 +75,9 @@ func add_group_item(parent: TreeItem, key: String, group: Dictionary) -> void:
 #region: tree events
 func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
 	if column == 2:
-		group_removed.emit(item.get_text(1))
+		var group_name: String = item.get_metadata(1)
 		item.free()
+		group_removed.emit(group_name)
 
 func _on_item_edited() -> void:
 	var item: TreeItem = _aim_tree.get_edited()
