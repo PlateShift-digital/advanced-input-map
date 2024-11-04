@@ -1,11 +1,13 @@
 extends Control
 
 @onready var panel: VBoxContainer = $HSplitContainer/ScrollContainer/ActionEvents
-@onready var input_list: VBoxContainer = $HSplitContainer/VSplitContainer/InputList
-@onready var groups_list: VBoxContainer = $HSplitContainer/VSplitContainer/GroupsList
+@onready var input_list: VBoxContainer = $HSplitContainer/Lists/ScrollContainer/InputList
+@onready var groups_list: VBoxContainer = $HSplitContainer/Lists/GroupsList
 @onready var scroll_bar: VScrollBar = $HSplitContainer/ScrollContainer.get_v_scroll_bar()
+@onready var input_display: Label = $HSplitContainer/Lists/HBoxContainer/InputDisplay
 
 var max_scroll_length: float
+var current_input: String
 
 
 func _ready() -> void:
@@ -32,7 +34,12 @@ func _ready() -> void:
 	else:
 		new_label = Label.new()
 		new_label.text = 'AdvancedInputMap is disabled'
-		input_list.add_child(new_label)
+		groups_list.add_child(new_label)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		if event.is_pressed():
+			current_input = event.as_text()
 
 func _process(_delta: float) -> void:
 	var display_label: Label
@@ -46,11 +53,13 @@ func _process(_delta: float) -> void:
 			new_label.text = action + ' pressed'
 			panel.add_child(new_label)
 			display_label.add_theme_color_override('font_color', Color.GREEN_YELLOW)
+			input_display.text = current_input
 		if Input.is_action_just_released(action):
 			new_label = Label.new()
 			new_label.text = action + ' released'
 			panel.add_child(new_label)
 			display_label.add_theme_color_override('font_color', Color.ORANGE_RED)
+			input_display.text = 'waiting for input...'
 
 func get_project_input_list() -> Array:
 	var item_name: String

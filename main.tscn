@@ -19,16 +19,31 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VSplitContainer" type="VSplitContainer" parent="HSplitContainer"]
+[node name="Lists" type="VBoxContainer" parent="HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="InputList" type="VBoxContainer" parent="HSplitContainer/VSplitContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/Lists"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GroupsList" type="VBoxContainer" parent="HSplitContainer/VSplitContainer"]
+[node name="InputList" type="VBoxContainer" parent="HSplitContainer/Lists/ScrollContainer"]
 layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GroupsList" type="VBoxContainer" parent="HSplitContainer/Lists"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/Lists"]
+layout_mode = 2
+
+[node name="ActiveLabel" type="Label" parent="HSplitContainer/Lists/HBoxContainer"]
+layout_mode = 2
+text = "Active Input:"
+
+[node name="InputDisplay" type="Label" parent="HSplitContainer/Lists/HBoxContainer"]
+layout_mode = 2
+text = "waiting for input..."
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer"]
 layout_mode = 2
