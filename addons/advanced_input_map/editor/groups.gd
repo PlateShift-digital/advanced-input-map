@@ -9,9 +9,11 @@ signal group_renamed(old_name: String, new_name: String)
 @onready var new_input: LineEdit = $HBoxContainer/AddNew
 @onready var new_button: Button = $HBoxContainer/AddNewButton
 
+var drag_drop_script: GDScript = preload('res://addons/advanced_input_map/editor/drag_drop_list.gd')
+var remove_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Remove.svg')
+
 var _aim_tree: Tree
 var _root: TreeItem
-var remove_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Remove.svg')
 
 
 func _ready() -> void:
@@ -37,9 +39,10 @@ func get_data() -> Dictionary:
 func render(data: Dictionary) -> void:
 	if _aim_tree:
 		_aim_tree.queue_free()
-	_aim_tree = Tree.new()
+	_aim_tree = drag_drop_script.new()
 	_aim_tree.item_edited.connect(_on_item_edited)
 	_aim_tree.button_clicked.connect(_on_button_clicked)
+	_aim_tree.list_sorted.connect(_on_tree_list_sorted)
 
 	_aim_tree.column_titles_visible = true
 	_aim_tree.hide_root = true
@@ -93,6 +96,9 @@ func _on_item_edited() -> void:
 		var old_name: String = item.get_metadata(1)
 		item.set_metadata(1, item.get_text(1))
 		group_renamed.emit(old_name, item.get_text(1))
+
+func _on_tree_list_sorted() -> void:
+	list_changed.emit()
 #endregion
 
 #region: input form events

@@ -12,6 +12,7 @@ signal event_hotkey_binding_executed(binding: String, index: int)
 @onready var new_input: LineEdit = $HBoxContainer/AddNew
 @onready var new_button: Button = $HBoxContainer/AddNewButton
 
+var drag_drop_script: GDScript = preload('res://addons/advanced_input_map/editor/drag_drop_list.gd')
 var add_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Add.svg')
 var edit_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Edit.svg')
 var remove_texture: CompressedTexture2D = preload('res://addons/advanced_input_map/icons/Remove.svg')
@@ -59,11 +60,12 @@ func get_data() -> Dictionary:
 func render(data: Dictionary) -> void:
 	if _aim_tree:
 		_aim_tree.queue_free()
-	_aim_tree = Tree.new()
+	_aim_tree = drag_drop_script.new()
 	_aim_tree.item_edited.connect(_on_item_edited)
 	_aim_tree.button_clicked.connect(_on_button_clicked)
 	_aim_tree.item_activated.connect(_on_item_activated)
 	_aim_tree.item_icon_double_clicked.connect(_on_item_edited)
+	_aim_tree.list_sorted.connect(_on_tree_list_sorted)
 
 	_aim_tree.column_titles_visible = true
 	_aim_tree.hide_root = true
@@ -128,14 +130,6 @@ func add_key_item(parent: TreeItem, event: Dictionary) -> void:
 #endregion
 
 #region: tree events
-func get_key_sorted_dict(dictionary: Dictionary) -> Dictionary:
-	var new_dict: Dictionary = {}
-	var keys: Array = dictionary.keys()
-	keys.sort()
-	for key in keys:
-		new_dict[key] = dictionary[key]
-	return new_dict
-
 func resolve_depth(item: TreeItem) -> int:
 	var depth: int = 0
 
@@ -195,6 +189,9 @@ func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index
 		if column == 4: # delete keybind
 			item.free()
 			list_changed.emit()
+
+func _on_tree_list_sorted() -> void:
+	list_changed.emit()
 #endregion
 
 #region: input form events
