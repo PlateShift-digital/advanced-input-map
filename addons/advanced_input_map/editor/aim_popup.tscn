@@ -71,7 +71,7 @@ layout_mode = 2
 [node name="AddNew" type="LineEdit" parent="MarginContainer/TabContainer/Groups/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Add New Action"
+placeholder_text = "Add New Group"
 
 [node name="AddNewButton" type="Button" parent="MarginContainer/TabContainer/Groups/HBoxContainer"]
 layout_mode = 2
@@ -125,26 +125,6 @@ theme_override_constants/margin_bottom = 8
 
 [node name="VBoxContainer" type="VBoxContainer" parent="OverlayPanel/GroupSelect/MarginContainer"]
 layout_mode = 2
-
-[node name="GroupOptions" type="OptionButton" parent="OverlayPanel/GroupSelect/MarginContainer/VBoxContainer"]
-layout_mode = 2
-selected = 0
-item_count = 6
-popup/item_0/text = "none"
-popup/item_1/id = -1
-popup/item_1/separator = true
-popup/item_2/text = "hotbar_1"
-popup/item_2/id = 2
-popup/item_3/text = "hotbar_2"
-popup/item_3/id = 3
-popup/item_4/text = "hotbar_3"
-popup/item_4/id = 4
-popup/item_5/text = "movement"
-popup/item_5/id = 5
-
-[node name="ConfirmButton" type="Button" parent="OverlayPanel/GroupSelect/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Confirm"
 
 [node name="BindInput" type="Panel" parent="OverlayPanel"]
 visible = false

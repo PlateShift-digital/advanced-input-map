@@ -19,18 +19,13 @@ func _ready() -> void:
 	groups.group_removed.connect(_on_group_removed)
 	groups.group_renamed.connect(_on_group_renamed)
 
-	input_map.data = input_config
-	groups.data = groups_config
+	input_map.set_data(input_config)
+	groups.set_data(groups_config)
 
 	group_select.reload_group_options(groups_config.keys())
 	group_select.group_selected.connect(_on_group_select_group_selected)
 	bind_input.binding_event_confirmed.connect(_on_binding_event_confirmed)
 	bind_input.binding_event_canceled.connect(_on_binding_event_canceled)
-	render()
-
-func render() -> void:
-	input_map.render()
-	groups.render()
 
 #region: configuration management
 func handle_configuration_change() -> void:
@@ -74,8 +69,7 @@ func _on_group_select_group_selected(binding: String, group: String) -> void:
 	var input_map_data: Dictionary = input_map.get_data()
 	input_map_data[binding].group = group
 
-	input_map.data = input_map_data
-	input_map.render()
+	input_map.set_data(input_map_data)
 
 	handle_configuration_change()
 
@@ -85,8 +79,7 @@ func _on_group_removed(group_name: String) -> void:
 		if group_name == map_data[bind_key].group:
 			map_data[bind_key].group = ''
 
-	input_map.data = map_data
-	input_map.render()
+	input_map.set_data(map_data)
 
 	handle_configuration_change()
 
@@ -96,8 +89,7 @@ func _on_group_renamed(old_name: String, new_name: String) -> void:
 		if old_name == map_data[bind_key].group:
 			map_data[bind_key].group = new_name
 
-	input_map.data = map_data
-	input_map.render()
+	input_map.set_data(map_data)
 
 	handle_configuration_change()
 #endregion
@@ -106,12 +98,13 @@ func _on_group_renamed(old_name: String, new_name: String) -> void:
 func _on_event_hotkey_binding_executed(binding: String, index: int) -> void:
 	var event: InputEvent = null
 	if index != -1:
+		var input_event: Dictionary = input_map.get_data()[binding].events[index]
 		event = InputEventKey.new()
-		event.alt_pressed = input_map.data[binding].events[index].alt_pressed
-		event.shift_pressed = input_map.data[binding].events[index].shift_pressed
-		event.ctrl_pressed = input_map.data[binding].events[index].ctrl_pressed
-		event.physical_keycode = input_map.data[binding].events[index].physical_keycode
-		event.unicode = input_map.data[binding].events[index].unicode
+		event.alt_pressed = input_event.alt_pressed
+		event.shift_pressed = input_event.shift_pressed
+		event.ctrl_pressed = input_event.ctrl_pressed
+		event.physical_keycode = input_event.physical_keycode
+		event.unicode = input_event.unicode
 
 	bind_input.show_binding_menu(binding, index, event)
 	overlay_panel.show()
@@ -125,14 +118,15 @@ func _on_binding_event_confirmed(binding: String, index: int, event: InputEvent)
 		'unicode': event.unicode,
 	}
 
+	var data: Dictionary = input_map.get_data()
 	if index != -1:
-		input_map.data[binding].events[index] = event_data
+		data[binding].events[index] = event_data
 	else:
-		input_map.data[binding].events.append(event_data)
+		data[binding].events.append(event_data)
+	input_map.set_data(data)
 
 	bind_input.hide()
 	overlay_panel.hide()
-	render()
 
 	handle_configuration_change()
 
