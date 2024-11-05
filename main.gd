@@ -31,6 +31,10 @@ func _ready() -> void:
 			new_group.button_pressed = get_tree().root.get_node('AdvancedInput').group_enabled(group)
 			new_group.toggled.connect(_on_group_toggled)
 			groups_list.add_child(new_group)
+
+		new_label = Label.new()
+		new_label.text = 'AdvancedInputMap is enabled!'
+		groups_list.add_child(new_label)
 	else:
 		new_label = Label.new()
 		new_label.text = 'AdvancedInputMap is disabled'
