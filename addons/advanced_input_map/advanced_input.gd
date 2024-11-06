@@ -160,12 +160,12 @@ func get_key_groups() -> Array:
 	return groups.keys()
 
 func enable_group(group_name: String) -> void:
-	if not groups[group_name]:
+	if groups.has(group_name) and not groups[group_name]:
 		groups[group_name] = true
 		_enabled_groups.append(group_name)
 
 func disable_group(group_name: String) -> void:
-	if groups[group_name]:
+	if groups.has(group_name) and groups[group_name]:
 		groups[group_name] = false
 		_enabled_groups.remove_at(_enabled_groups.find(group_name))
 
