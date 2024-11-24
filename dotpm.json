@@ -1,0 +1,6 @@
+{
+	"name": "plateshift/advanced-input-map",
+	"install_source": "addons/advanced_input_map",
+	"install_target": "addons/advanced_input_map",
+	"godot_version": "4.*"
+}
